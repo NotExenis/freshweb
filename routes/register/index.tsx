@@ -7,7 +7,11 @@ export default function RegisterPage() {
             <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
               Register an account
             </h1>
-            <form class="space-y-4 md:space-y-6" action="./codex.ts" method="POST">
+            <form
+              class="space-y-4 md:space-y-6"
+              action="./codex.ts"
+              method="POST"
+            >
               <div>
                 <label
                   for="email"

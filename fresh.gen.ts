@@ -6,7 +6,6 @@ import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login_index from "./routes/login/index.tsx";
-import * as $register_codex from "./routes/register/codex.ts";
 import * as $register_index from "./routes/register/index.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import type { Manifest } from "$fresh/server.ts";
@@ -17,7 +16,6 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/index.tsx": $index,
     "./routes/login/index.tsx": $login_index,
-    "./routes/register/codex.ts": $register_codex,
     "./routes/register/index.tsx": $register_index,
   },
   islands: {
