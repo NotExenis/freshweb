@@ -9,8 +9,8 @@ export default function RegisterPage() {
             </h1>
             <form
               class="space-y-4 md:space-y-6"
-              action="./codex.ts"
-              method="POST"
+              action="./register"
+              method="GET"
             >
               <div>
                 <label
