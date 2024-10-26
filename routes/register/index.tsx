@@ -1,3 +1,86 @@
+import { Handlers, PageProps } from "$fresh/server.ts";
+import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
+import { connect } from "../../private/db.ts";
+
+interface RegisterData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+// Separate the handler from the component
+export const handler: Handlers = {
+  async POST(req: Request): Promise<Response> {
+    let conn;
+    try {
+      const formData = await req.formData();
+      const userData: RegisterData = {
+        name: formData.get("name")?.toString() || "",
+        email: formData.get("email")?.toString() || "",
+        password: formData.get("password")?.toString() || "",
+      };
+
+      if (!userData.name || !userData.email || !userData.password) {
+        return new Response(
+          JSON.stringify({
+            error: "All fields are required",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(userData.password);
+      conn = await connect();
+
+      const [existingUsers] = await conn.execute(
+        "SELECT * FROM users WHERE email = ?",
+        [userData.email]
+      );
+
+      if (Array.isArray(existingUsers) && existingUsers.length > 0) {
+        return new Response(
+          JSON.stringify({
+            error: "Email already registered",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      await conn.execute(
+        "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+        [userData.name, userData.email, hashedPassword]
+      );
+
+      return new Response(null, {
+        status: 302,
+        headers: { Location: "/login" },
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      return new Response(
+        JSON.stringify({
+          error: "Registration failed",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    } finally {
+      if (conn) {
+        await conn.end();
+      }
+    }
+  },
+};
+
+// Separate component function
 export default function RegisterPage() {
   return (
     <section class="bg-gray-50 dark:bg-slate-600">
@@ -9,12 +92,11 @@ export default function RegisterPage() {
             </h1>
             <form
               class="space-y-4 md:space-y-6"
-              action="./register"
-              method="GET"
+              method="POST"
             >
               <div>
                 <label
-                  for="email"
+                  for="name"
                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Your username
@@ -25,8 +107,8 @@ export default function RegisterPage() {
                   id="name"
                   class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="username"
-                >
-                </input>
+                  required
+                />
               </div>
               <div>
                 <label
@@ -41,13 +123,12 @@ export default function RegisterPage() {
                   id="email"
                   class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="email@email.com"
-                >
-                </input>
+                  required
+                />
               </div>
               <div>
                 <label
                   for="password"
-                  name="password"
                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Password
@@ -58,13 +139,13 @@ export default function RegisterPage() {
                   id="password"
                   placeholder="••••••••"
                   class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                >
-                </input>
+                  required
+                />
               </div>
-              <div class="bg-slate-500 w-50">
+              <div>
                 <button
                   type="submit"
-                  class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                  class="w-full text-white bg-slate-600 hover:bg-slate-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-slate-600 dark:hover:bg-slate-700 dark:focus:ring-primary-800"
                 >
                   Register
                 </button>
