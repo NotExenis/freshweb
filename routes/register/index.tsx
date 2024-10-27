@@ -1,5 +1,5 @@
 import { Handlers } from "$fresh/server.ts";
-import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import { connect } from "../../private/db.ts";
 
 interface RegisterData {
@@ -69,11 +69,10 @@ export const handler: Handlers = {
         status: 302,
         headers: { Location: "/login" },
       });
-    } catch (error: unkown) {
+    } catch (_error: unknown) {
       return new Response(
         JSON.stringify({
           error: "Registration failed",
-          details: error.message
         }),
         {
           status: 500,

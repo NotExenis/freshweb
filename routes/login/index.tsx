@@ -1,3 +1,133 @@
+import { Handlers } from "$fresh/server.ts";
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { connect } from "../../private/db.ts";
+import { create } from "https://deno.land/x/djwt@v2.9.1/mod.ts";
+import { RowDataPacket } from "mysql2";
+
+interface UserRecord extends RowDataPacket {
+  user_id: number;
+  user_email: string;
+  user_password: string;
+  user_name: string;
+  user_2fa: number;
+}
+
+interface LoginData {
+  email: string;
+  password: string;
+}
+
+const KEY = await crypto.subtle.generateKey(
+  { name: "HMAC", hash: "SHA-512" },
+  true,
+  ["sign", "verify"]
+);
+
+export const handler: Handlers = {
+  async POST(req: Request): Promise<Response> {
+    let conn;
+    try {
+      const formData = await req.formData();
+      const loginData: LoginData = {
+        email: formData.get("email")?.toString() || "",
+        password: formData.get("password")?.toString() || "",
+      };
+
+      if (!loginData.email || !loginData.password) {
+        console.log("Validation failed:", {
+          hasEmail: !!loginData.email,
+          hasPassword: !!loginData.password
+        });
+        return new Response(
+          JSON.stringify({
+            error: "Email and password are required",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      conn = await connect();
+
+      const [users] = await conn.execute<UserRecord[]>(
+        "SELECT * FROM tbl_users WHERE user_email = ?",
+        [loginData.email],
+      );
+
+      if (!Array.isArray(users) || users.length === 0) {
+        console.log("User not found");
+        return new Response(
+          JSON.stringify({
+            error: "Invalid email or password",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const user = users[0];
+      const passwordMatch = await bcrypt.compare(loginData.password, user.user_password);
+
+      if (!passwordMatch) {
+        console.log("Password mismatch");
+        return new Response(
+          JSON.stringify({
+            error: "Invalid email or password",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const jwt = await create(
+        { alg: "HS512", typ: "JWT" },
+        { 
+          userId: user.user_id,
+          email: user.user_email,
+          exp: Date.now() / 1000 + 60 * 60 * 24 
+        },
+        KEY
+      );
+
+      const headers = new Headers();
+      headers.set("Set-Cookie", `auth=${jwt}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`);
+      headers.set("Location", "/dashboard");
+
+      return new Response(null, {
+        status: 302,
+        headers,
+      });
+
+    } catch (error: unknown) {
+      console.error("Login error:", error);
+      return new Response(
+        JSON.stringify({
+          error: "Login failed",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    } finally {
+      if (conn) {
+        try {
+          await conn.end();
+          console.log("Database connection closed successfully");
+        } catch (closeError) {
+          console.error("Error closing database connection:", closeError);
+        }
+      }
+    }
+  },
+};
+
 export default function Login() {
   return (
     <section class="bg-gray-50 dark:bg-slate-600">
@@ -7,7 +137,7 @@ export default function Login() {
             <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
               Sign in to your account
             </h1>
-            <form class="space-y-4 md:space-y-6" action="#">
+            <form class="space-y-4 md:space-y-6" method="POST">
               <div>
                 <label
                   for="email"
@@ -45,7 +175,7 @@ export default function Login() {
                   <div class="flex items-center h-5">
                     <input
                       type="checkbox"
-                      class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
+                      class="appearance-none checked:content-['⛔'] w-4 h-4 border border-gray-300 rounded bg-gray-50 checked:bg-blue-600 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
                     >
                     </input>
                   </div>
