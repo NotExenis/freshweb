@@ -1,4 +1,4 @@
-import { Handlers, PageProps } from "$fresh/server.ts";
+import { Handlers } from "$fresh/server.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 import { connect } from "../../private/db.ts";
 
@@ -8,7 +8,6 @@ interface RegisterData {
   password: string;
 }
 
-// Separate the handler from the component
 export const handler: Handlers = {
   async POST(req: Request): Promise<Response> {
     let conn;
@@ -21,6 +20,11 @@ export const handler: Handlers = {
       };
 
       if (!userData.name || !userData.email || !userData.password) {
+        console.log("Validation failed:", { 
+          hasName: !!userData.name, 
+          hasEmail: !!userData.email, 
+          hasPassword: !!userData.password 
+        });
         return new Response(
           JSON.stringify({
             error: "All fields are required",
@@ -32,15 +36,16 @@ export const handler: Handlers = {
         );
       }
 
-      const hashedPassword = await bcrypt.hash(userData.password);
       conn = await connect();
 
+      // Check for existing user
       const [existingUsers] = await conn.execute(
-        "SELECT * FROM users WHERE email = ?",
-        [userData.email]
+        "SELECT * FROM tbl_users WHERE user_email = ?",
+        [userData.email],
       );
 
       if (Array.isArray(existingUsers) && existingUsers.length > 0) {
+        console.log("User with email already exists");
         return new Response(
           JSON.stringify({
             error: "Email already registered",
@@ -52,20 +57,23 @@ export const handler: Handlers = {
         );
       }
 
+      const hashedPassword = await bcrypt.hash(userData.password);
+
+      // insert given data into db
       await conn.execute(
-        "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-        [userData.name, userData.email, hashedPassword]
+        "INSERT INTO tbl_users (user_name, user_email, user_password, user_2fa) VALUES (?, ?, ?,?)",
+        [userData.name, userData.email, hashedPassword, 0],
       );
 
       return new Response(null, {
         status: 302,
         headers: { Location: "/login" },
       });
-    } catch (error) {
-      console.error("Registration error:", error);
+    } catch (error: unkown) {
       return new Response(
         JSON.stringify({
           error: "Registration failed",
+          details: error.message
         }),
         {
           status: 500,
@@ -74,13 +82,17 @@ export const handler: Handlers = {
       );
     } finally {
       if (conn) {
-        await conn.end();
+        try {
+          await conn.end();
+          console.log("Database connection closed successfully");
+        } catch (closeError) {
+          console.error("Error closing database connection:", closeError);
+        }
       }
     }
   },
 };
 
-// Separate component function
 export default function RegisterPage() {
   return (
     <section class="bg-gray-50 dark:bg-slate-600">
