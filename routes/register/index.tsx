@@ -9,7 +9,7 @@ interface RegisterData {
 }
 
 export const handler: Handlers = {
-  async POST(req: Request): Promise<Response> {
+  /*async POST(req: Request): Promise<Response> {
     let conn;
     try {
       const formData = await req.formData();
@@ -89,7 +89,7 @@ export const handler: Handlers = {
         }
       }
     }
-  },
+  },*/
 };
 
 export default function RegisterPage() {
