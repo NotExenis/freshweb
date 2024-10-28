@@ -7,6 +7,7 @@ import * as $_app from "./routes/_app.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login_index from "./routes/login/index.tsx";
 import * as $register_index from "./routes/register/index.tsx";
+import * as $ColorPicker from "./islands/ColorPicker.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -19,6 +20,8 @@ const manifest = {
     "./routes/register/index.tsx": $register_index,
   },
   islands: {
+    "./routes/login/index.tsx": $login_index,
+    "./islands/ColorPicker.tsx": $ColorPicker,
     "./islands/Counter.tsx": $Counter,
   },
   baseUrl: import.meta.url,
