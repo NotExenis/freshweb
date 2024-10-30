@@ -1,7 +1,10 @@
 import { type PageProps } from "$fresh/server.ts";
-import Navbar from "../components/navbar.tsx";
-export default function App({ Component }: PageProps) {
-  const isLoggedIn = false;
+import Navbar from "../islands/navbar.tsx";
+type EnhancedPageProps = PageProps & {
+  req: Request;
+};
+
+export default function App({ Component }: EnhancedPageProps) {
   return (
     <html>
       <head>
@@ -12,7 +15,7 @@ export default function App({ Component }: PageProps) {
         <link rel="icon" type="image/x-icon" href="/images/ekremdied.png" />
       </head>
       <body class="dark:bg-slate-600 dark:text-white">
-        <Navbar isLoggedIn={isLoggedIn} />
+        <Navbar />
         <Component />
       </body>
     </html>

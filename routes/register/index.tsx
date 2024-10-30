@@ -20,10 +20,10 @@ export const handler: Handlers = {
       };
 
       if (!userData.name || !userData.email || !userData.password) {
-        console.log("Validation failed:", { 
-          hasName: !!userData.name, 
-          hasEmail: !!userData.email, 
-          hasPassword: !!userData.password 
+        console.log("Validation failed:", {
+          hasName: !!userData.name,
+          hasEmail: !!userData.email,
+          hasPassword: !!userData.password,
         });
         return new Response(
           JSON.stringify({

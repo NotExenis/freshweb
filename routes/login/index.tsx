@@ -10,6 +10,7 @@ interface UserRecord extends RowDataPacket {
   user_password: string;
   user_name: string;
   user_2fa: number;
+  user_role: "user" | "admin";
 }
 
 interface LoginData {
@@ -20,9 +21,8 @@ interface LoginData {
 const KEY = await crypto.subtle.generateKey(
   { name: "HMAC", hash: "SHA-512" },
   true,
-  ["sign", "verify"]
+  ["sign", "verify"],
 );
-
 export const handler: Handlers = {
   async POST(req: Request): Promise<Response> {
     let conn;
@@ -36,7 +36,7 @@ export const handler: Handlers = {
       if (!loginData.email || !loginData.password) {
         console.log("Validation failed:", {
           hasEmail: !!loginData.email,
-          hasPassword: !!loginData.password
+          hasPassword: !!loginData.password,
         });
         return new Response(
           JSON.stringify({
@@ -70,7 +70,10 @@ export const handler: Handlers = {
       }
 
       const user = users[0];
-      const passwordMatch = await bcrypt.compare(loginData.password, user.user_password);
+      const passwordMatch = await bcrypt.compare(
+        loginData.password,
+        user.user_password,
+      );
 
       if (!passwordMatch) {
         console.log("Password mismatch");
@@ -87,23 +90,35 @@ export const handler: Handlers = {
 
       const jwt = await create(
         { alg: "HS512", typ: "JWT" },
-        { 
+        {
           userId: user.user_id,
           email: user.user_email,
-          exp: Date.now() / 1000 + 60 * 60 * 24 
+          role: user.user_role,
+          exp: Math.floor(Date.now() / 1000 + 60 * 60 * 24),
         },
-        KEY
+        KEY,
       );
+      
+      const redirectPath = user.user_role === "admin"
+        ? "/admin/dashboard"
+        : "/dashboard";
 
-      const headers = new Headers();
-      headers.set("Set-Cookie", `auth=${jwt}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`);
-      headers.set("Location", "/dashboard");
-
-      return new Response(null, {
-        status: 302,
-        headers,
-      });
-
+      return new Response(
+        JSON.stringify({
+          token: jwt,
+          user: {
+            email: user.user_email,
+            role: user.user_role,
+          },
+          redirectPath,
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
     } catch (error: unknown) {
       console.error("Login error:", error);
       return new Response(
@@ -117,17 +132,13 @@ export const handler: Handlers = {
       );
     } finally {
       if (conn) {
-        try {
-          await conn.end();
-          console.log("Database connection closed successfully");
-        } catch (closeError) {
-          console.error("Error closing database connection:", closeError);
-        }
+        await conn.end().catch((err) =>
+          console.error("Error closing database connection:", err)
+        );
       }
     }
   },
 };
-
 export default function Login() {
   return (
     <section class="bg-gray-50 dark:bg-slate-600">
