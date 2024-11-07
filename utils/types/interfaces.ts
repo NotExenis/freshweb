@@ -21,3 +21,6 @@ export interface UserState {
   isAuthenticated: boolean;
   role: "guest" | "user" | "admin";
 }
+
+// deno-lint-ignore no-explicit-any
+export type JwtClaims = { [key: string]: any };

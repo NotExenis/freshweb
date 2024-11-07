@@ -1,5 +1,8 @@
-import { verify } from "https://deno.land/x/djwt@v2.8/mod.ts";
-import { type UserState } from "./types/interfaces.ts";
+import { type JwtClaims } from "./types/interfaces.ts";
+import jwt from "jsonwebtoken";
+import cookie from "cookie";
+
+const SECRET_KEY = "qweqewqeqweqweq";
 
 export interface JWTPayload {
   userId: string;
@@ -8,51 +11,34 @@ export interface JWTPayload {
   exp: number;
 }
 
-interface AuthConfig {
-  KEY: CryptoKey;
-  generateKey: () => Promise<CryptoKey>;
-}
+export { SECRET_KEY };
 
-let storedKey: CryptoKey | null = null;
+// deno-lint-ignore no-explicit-any
+export const generateToken = (claims: { [key: string]: any }) => {
+  return jwt.sign(JSON.stringify(claims), SECRET_KEY, {
+    algorithm: "HS512",
+  });
+};
 
-export async function generateKey(): Promise<CryptoKey> {
-  return await crypto.subtle.generateKey(
-    { name: "HMAC", hash: "SHA-512" },
-    true,
-    ["sign", "verify"],
-  );
-}
-
-export async function getKey(): Promise<CryptoKey> {
-  if (!storedKey) {
-    storedKey = await generateKey();
-  }
-  return storedKey;
-}
-
-export const KEY = getKey();
-
-export const getUserFromToken = async (
+export const getUserFromToken = (
   token: string,
-  KEY: CryptoKey,
-): Promise<UserState> => {
+): Promise<JwtClaims> => {
   try {
     if (!token) {
-      return { isAuthenticated: false, role: "guest" };
+      return Promise.reject(new Error("token empty"));
     }
 
-    const payload = await verify(token, KEY) as unknown as JWTPayload;
+    const payload = jwt.verify(token.toString(), SECRET_KEY, {
+      algorithms: ["HS512"],
+    }) as unknown as JWTPayload;
 
-    if (payload.exp < Math.floor(Date.now() / 1000)) {
-      return { isAuthenticated: false, role: "guest" };
+    if (Date.now() > payload.exp) {
+      return Promise.reject(new Error("expired jwt"));
     }
 
-    return {
-      isAuthenticated: true,
-      role: payload.role as "user" | "admin",
-    };
+    return Promise.resolve(payload);
   } catch (error) {
     console.error("Token verification error:", error);
-    return { isAuthenticated: false, role: "guest" };
+    return Promise.reject(error);
   }
 };
