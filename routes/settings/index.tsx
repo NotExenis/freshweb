@@ -8,7 +8,7 @@ export const handler: Handlers<JwtClaims> = {
   },
 };
 
-export default function DashBoard(props: PageProps<JwtClaims>) {
+export default function Settings(props: PageProps<JwtClaims>) {
   return (
     <div>
       <Navbar {...props} />

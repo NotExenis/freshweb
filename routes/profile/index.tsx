@@ -8,10 +8,22 @@ export const handler: Handlers<JwtClaims> = {
   },
 };
 
-export default function DashBoard(props: PageProps<JwtClaims>) {
+export default function UserPage(props: PageProps<JwtClaims>) {
   return (
     <div>
       <Navbar {...props} />
+      <div class="container mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="md:col-span-1">
+          </div>
+
+          <div class="md:col-span-2">
+          </div>
+
+          <div class="md:col-span-1">
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

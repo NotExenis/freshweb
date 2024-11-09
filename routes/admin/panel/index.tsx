@@ -1,6 +1,6 @@
-import { Handlers, PageProps } from "$fresh/server.ts";
-import type { JwtClaims } from "../../../utils/types/interfaces.ts";
+import type { Handlers, PageProps } from "$fresh/server.ts";
 import Navbar from "../../../islands/navbar.tsx";
+import type { JwtClaims } from "../../../utils/types/interfaces.ts";
 
 export const handler: Handlers<JwtClaims> = {
   GET(_, ctx) {
@@ -8,11 +8,10 @@ export const handler: Handlers<JwtClaims> = {
   },
 };
 
-export default function (props: PageProps<JwtClaims>) {
+export default function Settings(props: PageProps<JwtClaims>) {
   return (
     <div>
       <Navbar {...props} />
-      <h1>{props.data.email}</h1>
     </div>
   );
 }

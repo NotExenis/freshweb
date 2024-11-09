@@ -18,7 +18,7 @@ export default function App({ props, Component, url }: EnhancedPageProps) {
         <link rel="stylesheet" href="/styles.css" />
         <link rel="icon" type="image/x-icon" href="/images/ekremdied.png" />
       </head>
-      <body class="dark:bg-slate-600 dark:text-white">
+      <body>
         <Component />
       </body>
     </html>

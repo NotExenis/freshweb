@@ -3,10 +3,10 @@ import Navbar from "../islands/navbar.tsx";
 import type { JwtClaims } from "../utils/types/interfaces.ts";
 
 export const handler: Handlers<JwtClaims> = {
-  GET(_, ctx){
+  GET(_, ctx) {
     return ctx.render(ctx.state.user as JwtClaims);
-}
-}
+  },
+};
 
 export default function Home(props: PageProps<JwtClaims>) {
   return (

@@ -5,6 +5,7 @@ import cookie from "cookie";
 export async function handler(
   req: Request,
   ctx: FreshContext,
+  res: Response,
 ) {
   try {
     const cookies = req.headers.get("Cookie");
@@ -34,6 +35,16 @@ export async function handler(
         status: 302,
         headers: {
           Location: "/dashboard",
+        },
+      });
+    }
+
+    if (req.url.includes("/logout")) {
+      return new Response(null, {
+        status: 302,
+        headers: {
+          "Set-Cookie": "jwt=; max-age=-1; path=/",
+          "Location": "/",
         },
       });
     }
