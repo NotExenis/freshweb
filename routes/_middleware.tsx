@@ -20,6 +20,10 @@ export async function handler(
 
     const claims = await getUserFromToken(jwt);
     ctx.state.user = claims;
+    if (!claims) { 
+      console.error("Invalid claims received:", claims);
+      return ctx.next();
+    }
 
     if (req.url.includes("/login") || req.url.includes("/register")) {
       if (claims.role === "admin") {

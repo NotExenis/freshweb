@@ -5,14 +5,8 @@ import {
   guestNavigation,
   userNavigation,
 } from "../utils/navigation.ts";
-import { type JwtClaims } from "../utils/types/interfaces.ts";
-import type { Handlers, PageProps } from "$fresh/server.ts";
-
-export const handler: Handlers<JwtClaims> = {
-  GET(_, ctx) {
-    return ctx.render(ctx.state.user as JwtClaims);
-  },
-};
+import { type JwtClaims, type User } from "../utils/types/interfaces.ts";
+import type { PageProps } from "$fresh/server.ts";
 
 export default function Navbar(props: PageProps<JwtClaims>) {
   const navigationItems = {
@@ -20,6 +14,7 @@ export default function Navbar(props: PageProps<JwtClaims>) {
     user: userNavigation,
     admin: adminNavigation,
   };
+
   const role = props.data?.role || "guest";
   const getNavigationForRole = (role: string) => {
     switch (role?.toLowerCase()) {

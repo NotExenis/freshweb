@@ -6,6 +6,9 @@ import cookie from "cookie";
 import { generateToken } from "../../utils/jwt.ts";
 import Navbar from "../../islands/navbar.tsx";
 import type { JwtClaims } from "../../utils/types/interfaces.ts";
+import { Session } from "@5t111111/fresh-session";
+import { context } from "https://deno.land/x/esbuild@v0.20.2/mod.js";
+
 
 export interface UserRecord extends RowDataPacket {
   user_id: number;
@@ -28,7 +31,7 @@ export const handler2: Handlers<JwtClaims> = {
 };
 
 export const handler: Handlers<JwtClaims> = {
-  async POST(req: Request): Promise<Response> {
+  async POST(req: Request, ctx): Promise<Response> {
     let conn;
     try {
       const formData = await req.formData();
@@ -99,6 +102,7 @@ export const handler: Handlers<JwtClaims> = {
         role: user.user_role,
         exp: exp.setTime(exp.getTime() + 3600 * 1000 * 24),
       });
+    
 
       const redirectPath = user.user_role === "admin"
         ? "/admin/dashboard"

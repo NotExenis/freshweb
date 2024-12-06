@@ -4,7 +4,7 @@ export interface session {
   expires_at: Date;
 }
 
-export interface users {
+export interface User {
   id: number;
   name: string;
   email: string;
