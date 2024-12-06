@@ -1,29 +1,5 @@
-import ColorPicker from "../../islands/ColorPicker.tsx";
-import { h } from "preact";
-import { useEffect, useState } from "preact/hooks";
 
 export default function Login() {
-  const [bgColor, setBgColor] = useState("#ffffff");
-  const [outlineColor, setOutlineColor] = useState("#000000");
-
-  useEffect(() => {
-    const handleBgColorChange = (event: Event) => {
-      setBgColor((event as CustomEvent).detail);
-    };
-
-    const handleOutlineColorChange = (event: Event) => {
-      setOutlineColor((event as CustomEvent).detail);
-    };
-
-    window.addEventListener("bgColorChange", handleBgColorChange);
-    window.addEventListener("outlineColorChange", handleOutlineColorChange);
-
-    return () => {
-      window.removeEventListener("bgColorChange", handleBgColorChange);
-      window.removeEventListener("outlineColorChange", handleOutlineColorChange);
-    };
-  }, []);
-
   return (
     <section class="bg-gray-50 dark:bg-gradient-to-tr from-gray-800 from-40% via-gray-700 via-70% to-gray-800 to-85%">
       <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
@@ -99,15 +75,10 @@ export default function Login() {
                 <button
                     type="submit"
                     class="w-44 h-10 text-white bg-blue-500 shadow-lg shadow-blue-500/50 bg-primary-600 hover:bg-primary-700 transition duration-100 ease-in hover:scale-105 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700"
-                    style={{ backgroundColor: outlineColor }}
                   >
                     Sign in
                 </button>
               </div>
-              <main className="h-full items-center justify-center">
-                <ColorPicker
-                />  
-              </main>
             </form>
           </div>
         </div>
