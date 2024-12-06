@@ -15,7 +15,6 @@ import * as $login_index from "./routes/login/index.tsx";
 import * as $profile_index from "./routes/profile/index.tsx";
 import * as $register_index from "./routes/register/index.tsx";
 import * as $settings_index from "./routes/settings/index.tsx";
-import * as $js_openModal from "./islands/js/openModal.js";
 import * as $navbar from "./islands/navbar.tsx";
 import * as $openProfile from "./islands/openProfile.tsx";
 import * as $profileModal from "./islands/profileModal.tsx";
@@ -38,7 +37,6 @@ const manifest = {
     "./routes/settings/index.tsx": $settings_index,
   },
   islands: {
-    "./islands/js/openModal.js": $js_openModal,
     "./islands/navbar.tsx": $navbar,
     "./islands/openProfile.tsx": $openProfile,
     "./islands/profileModal.tsx": $profileModal,
