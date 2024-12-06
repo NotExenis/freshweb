@@ -1,6 +1,8 @@
-import { Handlers } from "$fresh/server.ts";
+import { Handlers, type PageProps } from "$fresh/server.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import { connect } from "../../private/db.ts";
+import Navbar from "../../islands/navbar.tsx";
+import type { JwtClaims } from "../../utils/types/interfaces.ts";
 
 interface RegisterData {
   name: string;
@@ -20,10 +22,10 @@ export const handler: Handlers = {
       };
 
       if (!userData.name || !userData.email || !userData.password) {
-        console.log("Validation failed:", { 
-          hasName: !!userData.name, 
-          hasEmail: !!userData.email, 
-          hasPassword: !!userData.password 
+        console.log("Validation failed:", {
+          hasName: !!userData.name,
+          hasEmail: !!userData.email,
+          hasPassword: !!userData.password,
         });
         return new Response(
           JSON.stringify({
@@ -92,19 +94,17 @@ export const handler: Handlers = {
   },
 };
 
-export default function RegisterPage() {
+export default function RegisterPage(props: PageProps<JwtClaims>) {
   return (
-    <section class="bg-gray-50 dark:bg-slate-600">
+    <section>
+      <Navbar {...props} />
       <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+        <div class="w-full bg-neutral rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:secondary">
           <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
             <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
               Register an account
             </h1>
-            <form
-              class="space-y-4 md:space-y-6"
-              method="POST"
-            >
+            <form class="space-y-4 md:space-y-6" method="POST">
               <div>
                 <label
                   for="name"
@@ -116,7 +116,7 @@ export default function RegisterPage() {
                   type="text"
                   name="name"
                   id="name"
-                  class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  class="bg-gray-50 border border-neutral text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                   placeholder="username"
                   required
                 />
@@ -132,7 +132,7 @@ export default function RegisterPage() {
                   type="email"
                   name="email"
                   id="email"
-                  class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  class="bg-gray-50 border border-neutral text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                   placeholder="email@email.com"
                   required
                 />
@@ -149,18 +149,16 @@ export default function RegisterPage() {
                   name="password"
                   id="password"
                   placeholder="••••••••"
-                  class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  class="bg-gray-50 border border-neutral text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                   required
                 />
               </div>
-              <div>
-                <button
-                  type="submit"
-                  class="w-full text-white bg-slate-600 hover:bg-slate-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-slate-600 dark:hover:bg-slate-700 dark:focus:ring-primary-800"
-                >
-                  Register
-                </button>
-              </div>
+              <button
+                type="submit"
+                class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+              >
+                Register
+              </button>
             </form>
           </div>
         </div>
